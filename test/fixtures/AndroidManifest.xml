@@ -1,0 +1,31 @@
+<!-- test/fixtures/AndroidManifest.xml
+     A COMPLIANT fixture manifest, mirroring the shape of the main app's
+     android/app/src/main/AndroidManifest.xml. Used to prove that
+     privacyManifestTests() passes a clean input. Keep this in sync with
+     the main app's permission set when it legitimately changes. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Required for the core flow per PRD §7.1 -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- INTERNET intentionally absent. See privacy contract (PRD §5)
+         and TechSpec §8.1. -->
+
+    <application
+        android:label="sumaflow_minutes"
+        android:name="${applicationName}"
+        android:icon="@mipmap/ic_launcher"
+        android:usesCleartextTraffic="false">
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:launchMode="singleTop" />
+        <service
+            android:name=".recording.RecordingForegroundService"
+            android:foregroundServiceType="microphone"
+            android:exported="false" />
+    </application>
+</manifest>

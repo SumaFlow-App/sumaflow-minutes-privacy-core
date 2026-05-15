@@ -1,0 +1,28 @@
+name: sumaflow_minutes_privacy_core
+description: >-
+  Privacy-critical modules of SumaFlow Minutes — open-sourced under MIT
+  so the privacy contract (PRD §5) is verifiable.
+version: 0.0.1
+homepage: https://github.com/SumaFlow-App/sumaflow-minutes-privacy-core
+# Consumed as a path dependency by the main app (private repo). Not on
+# pub.dev yet — revisit if the privacy-core gets external contributors.
+publish_to: 'none'
+
+environment:
+  sdk: ^3.11.3
+  flutter: ">=1.17.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_riverpod: ^2.6.1  # ForegroundServiceBridge provider — matches main app
+  # flutter_test is a *runtime* dependency on purpose: this package is test
+  # infrastructure. privacyManifestTests() lives in lib/ (exported via
+  # testing.dart) so any consuming app can run it through `flutter test`.
+  flutter_test:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_lints: ^6.0.0
+
+flutter:
