@@ -2,10 +2,11 @@ name: sumaflow_minutes_privacy_core
 description: >-
   Privacy-critical modules of SumaFlow Minutes — open-sourced under MIT
   so the privacy contract (PRD §5) is verifiable.
-version: 0.0.1
+version: 0.0.2
 homepage: https://github.com/SumaFlow-App/sumaflow-minutes-privacy-core
-# Consumed as a path dependency by the main app (private repo). Not on
-# pub.dev yet — revisit if the privacy-core gets external contributors.
+# Consumed by the main app (private repo) via a pinned git `ref`, not a
+# path dependency. Not on pub.dev yet — revisit if the privacy-core gets
+# external contributors.
 publish_to: 'none'
 
 environment:

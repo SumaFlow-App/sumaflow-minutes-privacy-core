@@ -2,12 +2,17 @@
 
 ## What is mirrored
 
-`android/src/main/kotlin/app/sumaflow/sumaflow_minutes/recording/RecordingForegroundService.kt`
+`android/src/main/kotlin/app/sumaflow/minutes/recording/RecordingForegroundService.kt`
 in this repo is a **verbatim copy** of the file that actually runs in the
 main SumaFlow Minutes app:
 
-`android/app/src/main/kotlin/app/sumaflow/sumaflow_minutes/recording/RecordingForegroundService.kt`
+`android/app/src/main/kotlin/app/sumaflow/minutes/recording/RecordingForegroundService.kt`
 in `SumaFlow-App/sumaflow_minutes` (private).
+
+(The Android package was renamed `app.sumaflow.sumaflow_minutes` →
+`app.sumaflow.minutes`; both the directory path and the `package` line in
+the mirror were re-synced to match. A `diff` of the two paths produces no
+output.)
 
 ## Why it is duplicated
 

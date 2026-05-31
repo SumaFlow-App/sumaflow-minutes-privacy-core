@@ -1,4 +1,4 @@
-package app.sumaflow.sumaflow_minutes.recording
+package app.sumaflow.minutes.recording
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -10,8 +10,8 @@ import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
-import app.sumaflow.sumaflow_minutes.MainActivity
-import app.sumaflow.sumaflow_minutes.R
+import app.sumaflow.minutes.MainActivity
+import app.sumaflow.minutes.R
 
 class RecordingForegroundService : Service() {
 
@@ -36,7 +36,11 @@ class RecordingForegroundService : Service() {
         )
 
         val notification: Notification = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setSmallIcon(R.mipmap.ic_launcher)
+            // Monochrome status-bar icon (Week 7 rebrand). Status-bar icons
+            // are alpha masks the system tints; a full-color launcher icon
+            // would render as a white blob. Sourced from the rebrand handoff
+            // (handoff/icons/icon-notification-96.png).
+            .setSmallIcon(R.drawable.ic_notification)
             // PRD §11 UX principle: "Persistent notification copy" must
             // not imply uploading. No accent color, no progress bar.
             .setContentTitle("SumaFlow Minutes is recording")

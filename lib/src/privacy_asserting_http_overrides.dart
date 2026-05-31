@@ -16,16 +16,27 @@ import 'dart:io';
 /// in an integration test; any outbound network attempt then surfaces as a
 /// test failure with a stack trace pointing at the offending code.
 ///
-/// The SumaFlow Minutes privacy contract (PRD §5) forbids outbound network
-/// calls except user-initiated export intents — which do not go through
-/// [HttpClient] — so a correctly behaving build never trips this.
+/// It is meant to guard the scenarios where SumaFlow Minutes expects ZERO
+/// network activity — app boot, idle, and the core record → transcribe →
+/// minutes → export flow. A correctly behaving build never trips it under
+/// those scenarios.
+///
+/// It is deliberately NOT installed around the one flow that legitimately
+/// uses the network: the opt-in, Wi-Fi-only, SHA256-verified model download
+/// from huggingface.co (the Gemma 4 E2B minutes model — TechSpec §5.3 — and
+/// the optional Whisper "small.en" model — TechSpec §4.4). That download is
+/// explicitly user-initiated, host-pinned, and disclosed in the privacy
+/// whitepaper; it is exercised by its own download tests, not under this
+/// override. Inference itself runs entirely on-device and never reaches here.
 class PrivacyAssertingHttpOverrides extends HttpOverrides {
   @override
   HttpClient createHttpClient(SecurityContext? context) {
     throw StateError(
-      'PRIVACY VIOLATION: SumaFlow Minutes attempted to create an HttpClient. '
-      'The privacy contract (PRD §5) forbids outbound network calls except '
-      'user-initiated export intents. Find the offending code and remove it.',
+      'PRIVACY VIOLATION: SumaFlow Minutes attempted to create an HttpClient '
+      'in a scenario that must produce zero network calls. The only allowed '
+      'outbound flow is the opt-in, Wi-Fi-only, SHA256-verified model '
+      'download from huggingface.co, which is not exercised under this '
+      'override. Find the offending code and remove it.',
     );
   }
 }
