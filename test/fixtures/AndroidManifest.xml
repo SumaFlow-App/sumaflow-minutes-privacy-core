@@ -11,11 +11,19 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
-    <!-- INTERNET intentionally absent. See privacy contract (PRD §5)
-         and TechSpec §8.1. -->
+    <!-- INTERNET + ACCESS_NETWORK_STATE are gated to the opt-in,
+         Wi-Fi-only model downloads, both from huggingface.co:
+           - the Gemma 4 E2B model download (TechSpec §5.3, §10), and
+           - the optional Whisper "small.en" model download (TechSpec §4.4).
+         Each download is SHA256-verified against a pinned HuggingFace commit.
+         Inference itself runs entirely on-device with no outbound calls.
+         See PRD §5. This mirrors the main app's manifest; the rationale
+         comment is what privacyManifestTests() requires alongside INTERNET. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
-        android:label="sumaflow_minutes"
+        android:label="Minutes"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:usesCleartextTraffic="false">

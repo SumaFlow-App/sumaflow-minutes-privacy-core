@@ -1,22 +1,48 @@
 // lib/src/privacy_manifest_tests.dart
 //
-// PRIVACY MANIFEST REGRESSION TEST — TechSpec §8.1
-// "INTERNET permission intentionally absent — share intents do not
-//  require it. If a future feature genuinely needs INTERNET, document
-//  why in this manifest."
+// PRIVACY MANIFEST REGRESSION TEST — TechSpec §8.1, §10
 //
 // Relocated from the main app's test/privacy_manifest_test.dart and
 // parameterized so it runs against any consumer's manifest + pubspec.
 // The main app keeps a thin test/ wrapper that calls privacyManifestTests()
 // with its real paths; this package's own test/ runs it against fixtures.
 //
-// These assertions fail if any dependency or code change adds the INTERNET
-// permission to the merged Android manifest, pulls in a known-telemetry
-// package, or re-enables cleartext traffic. They run on every commit as
-// part of `flutter test`.
+// NETWORK POSTURE — the honest, current contract (PRD §5, TechSpec §5.3/§4.4):
+//
+//   SumaFlow Minutes performs ZERO outbound network calls during normal
+//   operation: record → transcribe → minutes → export all run entirely
+//   on-device. The ONE exception is an opt-in, Wi-Fi-only, SHA256-verified
+//   model download from huggingface.co — the Gemma 4 E2B minutes model
+//   (TechSpec §5.3) and the optional Whisper "small.en" model (TechSpec
+//   §4.4). The download is the reason the manifest declares INTERNET and
+//   ACCESS_NETWORK_STATE; inference itself never touches the network.
+//
+// These assertions therefore DO NOT forbid INTERNET outright (an earlier
+// release did, before the v1 on-device-model engine landed on 2026-05-16).
+// They enforce the contract as it actually ships:
+//
+//   - INTERNET, if declared, must carry a documented rationale in the
+//     manifest — a bare, unexplained declaration is a regression.
+//   - No genuinely-forbidden permission (contacts, calendar, camera,
+//     location, phone, SMS, wifi-state, …) ever appears.
+//   - No known-telemetry package is in the dependency list.
+//   - Cleartext traffic stays disabled.
+//
+// They run on every commit as part of `flutter test`.
 
 import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
+
+/// Default substrings that prove the INTERNET permission's rationale is
+/// documented in the manifest. The SumaFlow Minutes manifest wraps its
+/// INTERNET / ACCESS_NETWORK_STATE declarations in a comment explaining the
+/// opt-in model-download split; matching any of these confirms the rationale
+/// is present rather than a bare declaration. Consumers with a different
+/// rationale can override [internetRationaleMarkers].
+const List<String> kDefaultInternetRationaleMarkers = <String>[
+  'Gemma 4 E2B model download',
+  'TechSpec §5.3',
+];
 
 /// Registers the SumaFlow Minutes privacy-manifest regression tests against
 /// a specific consumer's Android manifest and pubspec.
@@ -35,48 +61,37 @@ import 'package:flutter_test/flutter_test.dart';
 void privacyManifestTests({
   required String manifestPath,
   required String pubspecPath,
+  List<String> internetRationaleMarkers = kDefaultInternetRationaleMarkers,
 }) {
   group('PRIVACY: Android manifest', () {
-    test('INTERNET permission must NOT be declared', () {
+    test('Required microphone-related permissions are declared', () {
       final manifest = File(manifestPath).readAsStringSync();
-
-      final hasInternetPermission = manifest.contains(
-        'android.permission.INTERNET',
-      );
-
-      expect(
-        hasInternetPermission,
-        isFalse,
-        reason:
-            'PRIVACY VIOLATION: $manifestPath '
-            'declares the INTERNET permission. SumaFlow Minutes\'s privacy '
-            'contract (PRD §5) requires zero outbound network calls from '
-            'the core app. Share/export uses Android intents which do not '
-            'require this permission. If a feature genuinely needs INTERNET, '
-            'this test must be updated and the privacy whitepaper revised '
-            'to disclose the change.',
-      );
-    });
-
-    test('Manifest declares expected microphone-related permissions only', () {
-      final manifest = File(manifestPath).readAsStringSync();
-
-      // Required for recording
       expect(manifest.contains('RECORD_AUDIO'), isTrue,
           reason: 'RECORD_AUDIO permission is required for the core flow.');
       expect(manifest.contains('FOREGROUND_SERVICE_MICROPHONE'), isTrue,
           reason: 'FOREGROUND_SERVICE_MICROPHONE required on Android 14+.');
+    });
 
-      // Must NOT be present
+    test('Only the model-download network permissions may be present', () {
+      final manifest = File(manifestPath).readAsStringSync();
+      // INTERNET + ACCESS_NETWORK_STATE are intentionally ALLOWED — they
+      // gate the opt-in, Wi-Fi-only, SHA256-verified model download from
+      // huggingface.co (see the network-posture note at the top of this
+      // file). Everything else network/sensor-adjacent must stay out.
       const forbiddenPermissions = [
-        'INTERNET',
-        'ACCESS_NETWORK_STATE',
         'ACCESS_WIFI_STATE',
+        'CHANGE_WIFI_STATE',
+        'CHANGE_NETWORK_STATE',
         'READ_CONTACTS',
+        'WRITE_CONTACTS',
         'READ_CALENDAR',
+        'WRITE_CALENDAR',
         'CAMERA',
         'ACCESS_FINE_LOCATION',
         'ACCESS_COARSE_LOCATION',
+        'ACCESS_BACKGROUND_LOCATION',
+        'READ_PHONE_STATE',
+        'READ_SMS',
       ];
       for (final permission in forbiddenPermissions) {
         expect(
@@ -90,6 +105,25 @@ void privacyManifestTests({
               'sumaflow.app/minutes/privacy-architecture FIRST.',
         );
       }
+    });
+
+    test('INTERNET permission, if declared, has its rationale documented', () {
+      // INTERNET is allowed but only with a comment explaining why; a bare
+      // declaration is a regression. The SumaFlow Minutes manifest wraps it
+      // in the opt-in model-download rationale block.
+      final manifest = File(manifestPath).readAsStringSync();
+      if (!manifest.contains('android.permission.INTERNET')) return;
+      final hasRationale = internetRationaleMarkers.any(manifest.contains);
+      expect(
+        hasRationale,
+        isTrue,
+        reason:
+            'INTERNET permission is declared in $manifestPath but its '
+            'rationale is not documented. Add a comment explaining the '
+            'on-device-inference / opt-in-download split (and disclose it in '
+            'the privacy whitepaper at sumaflow.app/minutes/privacy) before '
+            'merging.',
+      );
     });
 
     test('Manifest declares usesCleartextTraffic="false"', () {
