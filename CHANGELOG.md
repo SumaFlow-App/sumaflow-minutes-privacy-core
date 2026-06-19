@@ -18,6 +18,9 @@ key derivation and Keystore options, so existing encrypted data is unaffected.
   `flutter_secure_storage`, `crypto`. All exported via the runtime barrel.
 * No network behaviour added — the package still makes zero network calls of
   its own.
+* Repository scaffolding for the public launch: `SECURITY.md` (disclosures →
+  security@sumaflow.app), `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`; the README
+  now lists the crypto / keys / storage modules.
 
 ## 0.0.2
 

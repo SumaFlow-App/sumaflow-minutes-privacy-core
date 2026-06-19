@@ -7,6 +7,18 @@ so the privacy contract is verifiable independently of the main app.
 
 ## What's in here
 
+- **`lib/src/crypto/aead_file.dart`** — AES-256-GCM at-rest file encryption.
+  On-disk format `[12-byte nonce][16-byte MAC][ciphertext]`, via the
+  `cryptography` package with the `cryptography_flutter` native delegate.
+  Backs the "encrypted at rest" promise.
+- **`lib/src/keys/master_key.dart`** — a single per-install master key held in
+  Keystore-backed storage; every other key (audio-file key, SQLCipher DB key)
+  is HKDF-derived from it. The master key never leaves the device.
+- **`lib/src/storage/secure_storage.dart`** — the single source of truth for the
+  `flutter_secure_storage` (`EncryptedSharedPreferences`) backend options the
+  master key and other secrets are stored under.
+- **`lib/src/crypto/content_hash.dart`** — SHA-256 helper used by the export
+  audit log to record a hash of exactly what was exported.
 - **`lib/src/foreground_service_bridge.dart`** — the Dart side of the
   recording foreground service. Demonstrates that the platform channel
   surface has only `start` and `stop` methods — no data channel.
