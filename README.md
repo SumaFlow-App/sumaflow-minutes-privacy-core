@@ -5,6 +5,10 @@
 Privacy-critical modules of SumaFlow Minutes, open-sourced under MIT
 so the privacy contract is verifiable independently of the main app.
 
+> Section references like "PRD §5" or "TechSpec §6.2" point to SumaFlow Minutes'
+> internal product/technical specs. You don't need them to read or verify the
+> code here — they're breadcrumbs back to the requirement each module satisfies.
+
 ## What's in here
 
 - **`lib/src/crypto/aead_file.dart`** — AES-256-GCM at-rest file encryption.
@@ -79,6 +83,13 @@ machine-checkable encoding of the SumaFlow Minutes privacy contract:
 - No telemetry packages in `pubspec.yaml`
 - `usesCleartextTraffic="false"` declared
 
+Run them yourself — no sibling checkout or app access needed:
+
+```sh
+flutter pub get
+flutter test   # runs the manifest/pubspec assertions against test/fixtures/
+```
+
 The main app additionally enforces, in `integration_test/`, that no
 network call occurs during boot, idle, and the core record → minutes flow
 (via `PrivacyAssertingHttpOverrides`). These run on every commit in the
@@ -101,13 +112,13 @@ dependencies:
       ref: <commit-sha>   # bump deliberately when privacy-core changes
 ```
 
-To work on both repos at once, clone this one as a sibling and temporarily
-switch the `pubspec.yaml` entry to a `path:` dependency:
+To work on both repos at once, clone this one as a sibling of the main app
+and temporarily switch the `pubspec.yaml` entry to a `path:` dependency:
 
 ```
-C:\SumaFlow\
-  ├─ sumaflow_minutes\               (main app, private)
-  └─ sumaflow-minutes-privacy-core\  (this repo)
+<parent>/
+  ├─ sumaflow_minutes/               (main app, private)
+  └─ sumaflow-minutes-privacy-core/  (this repo)
 ```
 
 We'll switch to a published pub package later only if the privacy-core

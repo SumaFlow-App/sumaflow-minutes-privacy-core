@@ -36,10 +36,11 @@ A privacy-critical file living in two places is a smell. If the main app's
 copy changes and this one does not, the audit artifact silently goes stale.
 
 The cleaner architecture is a Flutter plugin that ships the Kotlin in its
-own AAR, so there is exactly one copy. That was deliberately deferred:
-plugin packaging is 1–2 days of yak shaving that does not move the
-user-facing product forward (Week 2 Day 0 setup note). Revisit in Week 6
-when there is slack.
+own AAR, so there is exactly one copy. That remains deliberately deferred:
+plugin packaging is 1–2 days of work that does not move the user-facing
+product forward. Until it happens, the sync discipline below keeps the
+mirror honest, and the byte-identical `diff` check makes any drift
+detectable.
 
 ## How to keep the mirror honest until then
 
