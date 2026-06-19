@@ -1,3 +1,24 @@
+## 0.1.0
+
+Crypto layer + key management moved in from the main app (Week 8 Day 4) — the
+at-rest encryption that backs PRD §5 promises 1–3 now lives in the auditable
+package. Verbatim relocation: same algorithms, same on-disk AEAD format, same
+key derivation and Keystore options, so existing encrypted data is unaffected.
+
+* **`crypto/aead_file.dart`** — AES-256-GCM file encryption, on-disk format
+  `[12-byte nonce][16-byte MAC][ciphertext]`, via `cryptography` +
+  `cryptography_flutter` (native delegate).
+* **`keys/master_key.dart`** — single per-install master key in Keystore-backed
+  storage; all subkeys HKDF-derived (audio-file key, SQLCipher DB key).
+* **`crypto/content_hash.dart`** — SHA-256 helper for the export audit log.
+* **`storage/secure_storage.dart`** — shared `flutter_secure_storage`
+  (`EncryptedSharedPreferences`) backend config; the single source of truth for
+  the Keystore options, consumed by both the crypto layer and the app.
+* New runtime deps: `cryptography`, `cryptography_flutter`,
+  `flutter_secure_storage`, `crypto`. All exported via the runtime barrel.
+* No network behaviour added — the package still makes zero network calls of
+  its own.
+
 ## 0.0.2
 
 Factual sync with the shipping app (2026-05-31). The app's privacy posture
